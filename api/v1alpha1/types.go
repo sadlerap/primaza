@@ -25,3 +25,20 @@ type ServiceClassIdentityItem struct {
 	// Value of the service class identity attribute.
 	Value string `json:"value"`
 }
+
+// HealthCheckContainer defines the container information to be used to
+// run helth checks for the service.
+type HealthCheckContainer struct {
+	// Container image with the client to run the test
+	Image string `json:"image"`
+	// Command to execute in the container to run the test
+	Command string `json:"command"`
+}
+
+// HealthCheck defines metadata that can be used check
+// the health of a service and report status.
+type HealthCheck struct {
+	// Container defines a container that will run a check against the
+	// ServiceEndpointDefinition to determine connectivity and access.
+	Container HealthCheckContainer `json:"container"`
+}

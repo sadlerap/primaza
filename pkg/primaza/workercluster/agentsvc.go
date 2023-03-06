@@ -69,12 +69,7 @@ func createAgentSvcDeployment(ctx context.Context, cli *kubernetes.Clientset, na
 	}
 
 	dep := obj.(*appsv1.Deployment)
-	r, err := cli.AppsV1().Deployments(namespace).Create(ctx, dep, metav1.CreateOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("error creating deployment: %w", err)
-	}
-
-	return r, nil
+	return dep, nil
 }
 
 const agentSvcDeployment string = `
@@ -122,17 +117,23 @@ spec:
             drop:
               - "ALL"
         livenessProbe:
+          failureThreshold: 3
           httpGet:
             path: /healthz
             port: 8081
           initialDelaySeconds: 15
           periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 1
         readinessProbe:
+          failureThreshold: 3
           httpGet:
             path: /readyz
             port: 8081
           initialDelaySeconds: 5
           periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
         resources:
           limits:
             cpu: 500m
@@ -140,6 +141,15 @@ spec:
           requests:
             cpu: 10m
             memory: 64Mi
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
       serviceAccountName: primaza-agentsvc
       terminationGracePeriodSeconds: 10
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: webhook-server-cert
 `
