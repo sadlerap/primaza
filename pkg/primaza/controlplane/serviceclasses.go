@@ -18,13 +18,16 @@ package controlplane
 
 import (
 	"context"
+	"errors"
 
 	primazaiov1alpha1 "github.com/primaza/primaza/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 func PushServiceClassToNamespaces(ctx context.Context, cli client.Client, sc primazaiov1alpha1.ServiceClass, namespaces []string) error {
+    var errorList []error
 	for _, ns := range namespaces {
 		sccp := &primazaiov1alpha1.ServiceClass{
 			ObjectMeta: metav1.ObjectMeta{
@@ -34,15 +37,16 @@ func PushServiceClassToNamespaces(ctx context.Context, cli client.Client, sc pri
 			Spec: sc.Spec,
 		}
 
-		if err := cli.Create(ctx, sccp, &client.CreateOptions{}); err != nil {
-			return err
-		}
+        if _, err := controllerutil.CreateOrUpdate(ctx, cli, sccp, func() error {return nil}); err != nil {
+            errorList = append(errorList, err)
+        }
 	}
 
-	return nil
+	return errors.Join(errorList...)
 }
 
 func DeleteServiceClassFromNamespaces(ctx context.Context, cli client.Client, sc primazaiov1alpha1.ServiceClass, namespaces []string) error {
+    var errorList []error
 	for _, ns := range namespaces {
 		sccp := &primazaiov1alpha1.ServiceClass{
 			ObjectMeta: metav1.ObjectMeta{
@@ -52,9 +56,9 @@ func DeleteServiceClassFromNamespaces(ctx context.Context, cli client.Client, sc
 		}
 
 		if err := cli.Delete(ctx, sccp, &client.DeleteOptions{}); err != nil {
-			return err
+            errorList = append(errorList, err)
 		}
 	}
 
-	return nil
+	return errors.Join(errorList...)
 }

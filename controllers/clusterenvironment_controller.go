@@ -461,7 +461,7 @@ func (r *ClusterEnvironmentReconciler) CreateServiceCatalog(ctx context.Context,
 	}
 
 	l.Info(ce.Spec.EnvironmentName)
-	if err := r.Create(ctx, &serviceCatalog); !apierrors.IsAlreadyExists(err) {
+    if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, &serviceCatalog, func() error {return nil}); err != nil {
 		l.Error(err, "Failed to create service catalog")
 		return err
 	}

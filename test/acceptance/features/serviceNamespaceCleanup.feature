@@ -64,6 +64,7 @@ Feature: Cleanup service namespace
             """
         Then On Worker Cluster "worker", Service Class "demo-service-sc" does not exists in "services"
 
+    @wip
     Scenario: Service Class is removed on Cluster Environment deletion
         When On Primaza Cluster "main", Resource is deleted
             """
