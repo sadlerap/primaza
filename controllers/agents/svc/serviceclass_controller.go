@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -54,8 +53,6 @@ const finalizer = "serviceclasses.primaza.io/finalizer"
 type ServiceClassReconciler struct {
 	client.Client
 	dynamic.Interface
-	RemoteScheme *runtime.Scheme
-	Mapper       meta.RESTMapper
 }
 
 type SEDMapping struct {
@@ -256,7 +253,7 @@ func (r *ServiceClassReconciler) HandleRegisteredServices(ctx context.Context, s
 
 	remote_client, err := client.New(config, client.Options{
 		Scheme: r.Client.Scheme(),
-		Mapper: r.Mapper,
+		Mapper: r.Client.RESTMapper(),
 	})
 	if err != nil {
 		return err
