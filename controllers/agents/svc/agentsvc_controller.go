@@ -18,7 +18,6 @@ package svc
 
 import (
 	"context"
-	"errors"
 
 	"github.com/primaza/primaza/api/v1alpha1"
 	"github.com/primaza/primaza/pkg/primaza/constants"
@@ -89,19 +88,10 @@ func (r *AgentServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request
 }
 
 func (r *AgentServiceReconciler) removeServiceClasses(ctx context.Context, req ctrl.Request) error {
-	// first, get the service class
-	serviceclassesList := v1alpha1.ServiceClassList{}
-	if err := r.List(ctx, &serviceclassesList, &client.ListOptions{Namespace: req.Namespace}); err != nil {
-		return client.IgnoreNotFound(err)
-	}
-	var errorList []error
-	for _, scclass := range serviceclassesList.Items {
-		serviceclass := scclass
-		if err := r.Delete(ctx, &serviceclass, &client.DeleteOptions{}); err != nil {
-			errorList = append(errorList, err)
-		}
-	}
-	return errors.Join(errorList...)
+	return client.IgnoreNotFound(
+		r.DeleteAllOf(ctx,
+			&v1alpha1.ServiceClass{},
+			client.InNamespace(req.Namespace)))
 }
 
 // SetupWithManager sets up the controller with the Manager.
