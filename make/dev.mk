@@ -33,11 +33,10 @@ test: manifests generate fmt vet envtest ## Run tests.
 test-acceptance-wip: test-acceptance-setup ## Runs acceptance tests for WIP tagged scenarios
 	@(kind get clusters | grep primaza | xargs -I@ kind delete cluster --name @) || true
 	echo "Running work in progress acceptance tests"
-	$(PYTHON_VENV_DIR)/bin/behave --junit --junit-directory $(TEST_ACCEPTANCE_OUTPUT_DIR) --no-capture --no-capture-stderr $(TEST_ACCEPTANCE_TAGS_ARG) $(EXTRA_BEHAVE_ARGS) --wip --stop test/acceptance/features
+	FEATURES_PATH=test/acceptance/features $(PYTHON_VENV_DIR)/bin/behavex -o $(TEST_ACCEPTANCE_OUTPUT_DIR) --no-capture --no-capture-stderr $(TEST_ACCEPTANCE_TAGS_ARG) $(EXTRA_BEHAVE_ARGS) -t "@wip" --stop
 
 .PHONY: test-acceptance-wip-x
 test-acceptance-wip-x: test-acceptance-setup ## Runs acceptance tests for WIP tagged scenarios
 	@(kind get clusters | grep primaza | xargs -I@ kind delete cluster --name @) || true
 	echo "Running work in progress acceptance tests in parallel"
-	FEATURES_PATH=test/acceptance/features $(PYTHON_VENV_DIR)/bin/behavex -o $(TEST_ACCEPTANCE_OUTPUT_DIR) --no-capture --no-capture-stderr $(TEST_ACCEPTANCE_TAGS_ARG) $(EXTRA_BEHAVE_ARGS) -t="@wip" --stop --parallel-processes $(TEST_ACCEPTANCE_PARALLEL)
-
+	FEATURES_PATH=test/acceptance/features $(PYTHON_VENV_DIR)/bin/behavex -o $(TEST_ACCEPTANCE_OUTPUT_DIR) --no-capture --no-capture-stderr $(TEST_ACCEPTANCE_TAGS_ARG) $(EXTRA_BEHAVE_ARGS) -t "@wip" --parallel-processes $(TEST_ACCEPTANCE_PARALLEL)
